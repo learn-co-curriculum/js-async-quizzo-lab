@@ -1,31 +1,30 @@
 {
-  "name": "js-advanced-functions-first-class-functions-lab",
+  "name": "js-async-quizzo-lab",
   "version": "0.2.0",
-  "description": "First-Class Functions Lab for Learn.co",
+  "description": "Async quizzo Lab for Learn.co",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/learn-co-curriculum/js-advanced-functions-first-class-functions-lab.git"
+    "url": "git+ssh://git@github.com/learn-co-curriculum/js-async-quizzo-lab.git"
   },
   "scripts": {
-   "postinstall": "gem install learn-co",
-   "test": "node_modules/browser-sync/bin/browser-sync.js start --config node_modules/learn-browser/bs-config.js"
- },
+    "postinstall": "gem install learn-co",
+    "test": "node_modules/browser-sync/bin/browser-sync.js start --config node_modules/learn-browser/bs-config.js"
+  },
   "keywords": [
     "learn",
     "flatiron school",
     "javascript",
-    "functions",
-    "functional",
-    "first-class",
-    "code-along"
+    "async",
+    "fetch",
+    "lab"
   ],
-  "author": "@gj",
+  "author": "Flatiron School",
   "license": "SEE LICENSE IN LICENSE.md",
   "bugs": {
-    "url": "https://github.com/learn-co-curriculum/js-advanced-functions-first-class-functions-lab/issues"
+    "url": "https://github.com/learn-co-curriculum/js-async-quizzo-lab/issues"
   },
-  "homepage": "https://github.com/learn-co-curriculum/js-advanced-functions-first-class-functions-lab#readme",
+  "homepage": "https://github.com/learn-co-curriculum/js-async-quizzo-lab#readme",
   "devDependencies": {
     "learn-browser": "^0.1.13"
   }

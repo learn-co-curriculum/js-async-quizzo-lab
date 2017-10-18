@@ -1,80 +1,173 @@
 const expect = chai.expect;
 
+describe('index', () => {
+  describe('requestCategories', () => {
+    let fetchSpy
+    beforeEach(function() {
+  		 fetchSpy = sinon.stub(window, 'fetch')
+    })
 
-describe('index', function() {
-  describe('returnFirstTwoDrivers()', function () {
-    it('should return an array of the first two drivers', function () {
-      expect(returnFirstTwoDrivers(['sally', 'bob', 'freddy', 'claudia'])).to.eql(['sally', 'bob'])
-    });
+    afterEach(function(){
+      window.fetch.restore()
+    })
 
-    it('should be set to a constant', function () {
-      expect(() => { returnFirstTwoDrivers = function(){ return 'new function'}} ).to.throw(TypeError)
-    });
-  });
+    it('uses fetch the api to request categories', function(){
+      requestCategories()
+      expect(fetchSpy.calledOnce).to.eq(true)
+    })
 
-  describe('`returnLastTwoDrivers` function', function () {
-    it('should return an array of the last two drivers', function () {
-      expect(returnLastTwoDrivers(['sally', 'bob', 'freddy', 'claudia'])).to.eql(['freddy', 'claudia'])
-    });
-
-    it('should be set to a constant', function () {
-      expect(() => { returnLastTwoDrivers = function(){ return 'new function'}} ).to.throw(TypeError)
-    });
-  });
-
-  describe('selectingDrivers', function () {
-    it('is an array (so it naturally responds to the `slice` method)', function () {
-      expect(selectingDrivers.slice).to.equal(Array.prototype.slice)
-    });
-
-    it('has the `returnFirstTwoDrivers` function to as its first element', function () {
-      expect(selectingDrivers[0]).to.eql(returnFirstTwoDrivers)
-    });
-
-    it('has the `returnLastTwoDrivers` function to as its last element', function () {
-      expect(selectingDrivers[selectingDrivers.length-1]).to.eql(returnLastTwoDrivers)
-    });
-
-    it('allows us to invoke either function from the array', function () {
-      let drivers = ['sally', 'bob', 'freddy', 'claudia']
-      expect(selectingDrivers[0](drivers)).to.eql(['sally', 'bob'])
-      expect(selectingDrivers[1](drivers)).to.eql(['freddy', 'claudia'])
-    });
-  });
-
-  describe('`createFareMultiplier` function', function () {
-    it('should return a function', function () {
-      const doubler = createFareMultiplier(2);
-      expect(doubler).to.be.a('function');
-    });
-
-    it('should multiply a given value using the created multiplier', function () {
-      const fareDoubler = createFareMultiplier(2);
-      expect(fareDoubler(5)).to.equal(10);
-    });
-  });
-
-  describe('FareMultiplier functions created with `createFareMultiplier`', function () {
-    it('should have a doubler function', function () {
-      expect(fareDoubler).to.be.a('function');
-      expect(fareDoubler(5)).to.equal(10);
-    });
-
-    it('should have a tripler function', function () {
-      expect(fareTripler).to.be.a('function');
-      expect(fareTripler(5)).to.equal(15);
-    });
-  });
-
-  describe('`selectDifferentDrivers(drivers, whichDrivers)` function', function(){
-    it('returns the first two drivers when passed through the `returnFirstTwoDrivers` as the second argument', function () {
-      let drivers = ['sally', 'bob', 'freddy', 'claudia']
-      expect(selectDifferentDrivers(drivers, returnFirstTwoDrivers)).to.eql(['sally', 'bob'])
-    });
-
-    it('returns the last two drivers when passed through the `returnLastTwoDrivers` as the second argument', function () {
-      let drivers = ['sally', 'bob', 'freddy', 'claudia']
-      expect(selectDifferentDrivers(drivers, returnLastTwoDrivers)).to.eql(['freddy', 'claudia'])
-    });
+    it('calls the jservice api to request four categories', function(){
+      requestCategories()
+      expect(fetchSpy.calledWith('http://jservice.io/api/categories?count=4')).to.eq(true)
+    })
   })
-});
+
+  describe('requestAndDisplayCategories', () => {
+    it('requests the categories and displays them ', function(){
+      let categoryContainer = document.querySelector('.category-container')
+      requestAndDisplayCategories().then(() => {
+        expect(categoryContainer.querySelectorAll('.btn').length).to.eq(4)
+      })
+    })
+
+    it('adds a div with a class of col s3 to wrap each button', function(){
+      let categoryContainer = document.querySelector('.category-container')
+      requestAndDisplayCategories().then(() => {
+        expect(categoryContainer.querySelectorAll('.s3').length).to.eq(4)
+      })
+    })
+  })
+
+  describe('setCategories', function(){
+    it('requests and sets the categories', function(){
+      setCategories().then(function(){
+        expect(categories.length).to.eq(4)
+      })
+    })
+  })
+
+  describe('makeRow', function(){
+    it('returns a string of div with class col s3 for each category', function(){
+      let number = 80
+      let categories = [{id: 11545, title: 'Great Books'}, {id: 11546, title: 'Good Movies'}, {id: 11547, title: 'Bad Sports Teams'}]
+      expect(makeRow(number, categories).match(/<div class="col s3" >/g).length).to.eq(3)
+    })
+
+    it('sets a data attribute with a category id equal to the id of category on each button div', function(){
+      let number = 80
+      let categories = [{id: 3, title: 'Great Books'}, {id: 4, title: 'Good Movies'}, {id: 5, title: 'Bad Sports Teams'}]
+      // [345] means 3 or 4 or 5 with regex
+      expect(makeRow(number, categories).match(/<div data-category-id=[345] class="waves-effect waves-light btn "> 80 /g).length).to.eq(3)
+    })
+  })
+
+  describe('makeRows', function(){
+    it('returns a string of div with class col s3 for each category', function(){
+      let numbers = [80, 100, 150, 200]
+      let categories = [{id: 3, title: 'Great Books'}, {id: 4, title: 'Good Movies'}, {id: 5, title: 'Bad Sports Teams'}]
+      expect(makeRows(numbers, categories).match(/div class="row"/g).length).to.eq(4)
+    })
+
+    it('sets a data attribute with a category id equal to the id of category on each button div', function(){
+      let numbers = [80, 100, 150, 200]
+      let categories = [{id: 3, title: 'Great Books'}, {id: 4, title: 'Good Movies'}, {id: 5, title: 'Bad Sports Teams'}]
+      expect(makeRows(numbers, categories).match(/80/g).length).to.eq(3)
+      expect(makeRows(numbers, categories).match(/150/g).length).to.eq(3)
+    })
+  })
+
+  describe('displayQuestionNumbers', function(){
+    let questionContainer
+    let numbers;
+    let categories;
+
+    beforeEach(function(){
+      questionContainer = document.querySelector('.question-container')
+      numbers = [100, 150, 200]
+      categories = [{id: 11545, title: 'Great Books'}, {id: 11546, title: 'Good Movies'}, {id: 11547, title: 'Bad Sports Teams'}]
+    })
+
+    it('appends a row for each number', function(){
+      displayQuestionNumbers(numbers, categories)
+      expect(questionContainer.querySelectorAll('.row').length).to.eq(3)
+    })
+  })
+
+  describe('requestClue', () => {
+    let fetchSpy
+    beforeEach(function() {
+  		fetchSpy = sinon.stub(window, 'fetch').returns(new Promise(function(){}))
+    })
+
+    afterEach(function(){
+      window.fetch.restore()
+    })
+
+    it('uses fetch the api', function(){
+      let categoryId = 11545
+      let value = 200
+      requestClue(categoryId, value)
+      expect(fetchSpy.calledOnce).to.eq(true)
+    })
+
+    it('calls the jservice api', function(){
+      let categoryId = 11545
+      let value = 200
+      requestClue(categoryId, value)
+      expect(fetchSpy.calledWith('http://jservice.io/api/clues?category=11545&value=200')).to.eq(true)
+    })
+  })
+
+  describe('displayClue', function(){
+    let clue;
+    beforeEach(function(){
+      clue = {id: 87936, answer: "egg nog",
+      question: "George Washington was a fan of this holiday drink but used whiskey & brandy as well as rum", value: 200,
+      airdate: "2009-07-10T12:00:00.000Z"}
+    })
+    it('displays the clue', function(){
+      displayClue(clue)
+    })
+  })
+
+  describe('checkAnswer', function(){
+    let clue;
+    beforeEach(function(){
+      clue = {id: 87936, answer: "egg nog",
+      question: "George Washington was a fan of this holiday drink but used whiskey & brandy as well as rum", value: 200,
+      airdate: "2009-07-10T12:00:00.000Z"}
+    })
+
+    it('returns false when the answer does not match', function(){
+      let answer = 'egg nogger'
+      expect(checkAnswer(clue, answer)).to.eq(false)
+    })
+
+    it('returns true when the answer does match', function(){
+      let answer = 'egg nog'
+      expect(checkAnswer(clue, answer)).to.eq(true)
+    })
+  })
+
+  describe('checkAnswerAndDisplay', function(){
+    let clue;
+    let answerContainer
+    beforeEach(function(){
+      clue = {id: 87936, answer: "egg nog",
+      question: "George Washington was a fan of this holiday drink but used whiskey & brandy as well as rum", value: 200,
+      airdate: "2009-07-10T12:00:00.000Z"}
+      answerContainer = document.querySelector('.answer-container')
+    })
+
+    it('appends the text Thats right when correct', function(){
+      checkAnswerAndDisplay(clue, "egg noggg")
+      expect(answerContainer.innerText.toLowerCase()).to.eq('sorry, we were looking for: egg nog')
+    })
+  })
+
+  describe('checkAndUpdateOnSubmit', function(){
+    it('checks and updates', function(){
+      checkAndUpdateOnSubmit()
+    })
+  })
+})
