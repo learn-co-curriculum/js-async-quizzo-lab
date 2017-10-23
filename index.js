@@ -15,16 +15,17 @@ function setCategories(){
 }
 
 function requestAndDisplayCategories(){
-  document.querySelector('.category-container').innerHTML = ''
+
   return setCategories().then((categories) => {
-    displayCategories(categories)
+    displayCategoriesContainer()
+    categoryContainer.innerHTML = makeCategories(categories);
   })
 }
 
-function displayCategories(categories){
+function displayCategoriesContainer(){
   let categoryContainer = document.querySelector('.category-container')
+  categoryContainer.innerHTML = ''
   categoryContainer.classList.remove('hide')
-  categoryContainer.innerHTML = makeCategories(categories);
 }
 
 function makeCategories(categories){
@@ -41,14 +42,6 @@ function displayQuestionNumbers(numbers, categories){
   questionContainer.innerHTML =  makeRows(numbers, categories)
 }
 
-function makeRows(numbers, categories){
-  return numbers.map((number) => {
-    return `<div class="row">
-              ${makeRow(number, categories)}
-            </div>`
-  }).join(' ')
-}
-
 function makeRow(number, categories){
   if(!categories || categories.length == 0){
     throw new Error('must have at least one category')
@@ -62,6 +55,16 @@ function makeRow(number, categories){
       </div>`
   }).join(' ')
 }
+
+function makeRows(numbers, categories){
+  return numbers.map((number) => {
+    return `<div class="row">
+              ${makeRow(number, categories)}
+            </div>`
+  }).join(' ')
+}
+
+
 
 function requestClue(categoryId, value){
 
