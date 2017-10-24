@@ -141,14 +141,39 @@ describe('index', () => {
   describe('displayClue', function(){
     // need more here
     let clue;
+
+
     beforeEach(function(){
       clue = {id: 87936, answer: "egg nog",
       question: "George Washington was a fan of this holiday drink but used whiskey & brandy as well as rum", value: 200,
       airdate: "2009-07-10T12:00:00.000Z"}
     })
-    
-    it('displays the clue', function(){
+
+    it('hides the question-container and category-container', function(){
+      let questionContainer = document.querySelector('.question-container')
+      let categoryContainer = document.querySelector('.category-container')
+      expect(Array.from(categoryContainer.classList)).to.not.include('hide')
+      expect(Array.from(questionContainer.classList)).to.not.include('hide')
       displayClue(clue)
+      expect(Array.from(questionContainer.classList)).to.include('hide')
+      expect(Array.from(categoryContainer.classList)).to.include('hide')
+    })
+
+    it('displays the clue-container and answer-container', function(){
+      let clueContainer = document.querySelector('.clue-container')
+      let answerContainer = document.querySelector('.answer-container')
+
+      answerContainer.classList.add('hide')
+      clueContainer.classList.add('hide')
+      displayClue(clue)
+      expect(Array.from(answerContainer.classList)).to.not.include('hide')
+      expect(Array.from(clueContainer.classList)).to.not.include('hide')
+    })
+
+    it('appends the clue to the answer-container', function(){
+      let answerContainer = document.querySelector('.answer-container')
+      displayClue(clue)
+      expect(answerContainer.innerHTML).to.include("George Washington")
     })
   })
 
@@ -171,6 +196,50 @@ describe('index', () => {
     })
   })
 
+  describe('onClickAskQuestion', function(){
+    let fetchSpy
+    let event;
+    let wrapper;
+    let button;
+    let displayClueSpy;
+
+    beforeEach(function() {
+  		 requestClueSpy = sinon.stub(window, 'requestClue')
+       displayClueSpy = sinon.stub(window, 'displayClue')
+       requestClueSpy.onCall(0).returns(new Promise(function(){}))
+       event = new MouseEvent('click', {
+         'view': window,
+         'bubbles': true,
+         'cancelable': true
+       });
+
+      wrapper = document.querySelector('.question-container');
+      wrapper.innerHTML = '<div class="btn"> foobar </div>'
+
+      button = wrapper.querySelector('.btn');
+    })
+
+    afterEach(function(){
+      window.requestClue.restore()
+      window.displayClue.restore()
+    })
+
+    it('adds a click event listener on all question buttons so that when clicked requests clue', function(){
+      onClickAskQuestion()
+
+      button.dispatchEvent(event)
+      expect(requestClueSpy.calledOnce).to.eq(true)
+    })
+
+    it('adds a click event listener on all question buttons so that when clicked displays clue', function(){
+      onClickAskQuestion()
+      button.dispatchEvent(event)
+      setTimeout(function(){
+        expect(displayClueSpy.calledOnce).to.eq(true)
+      }, 200)
+    })
+  })
+
   describe('checkAnswerAndDisplay', function(){
     let clue;
     let answerContainer
@@ -187,9 +256,111 @@ describe('index', () => {
     })
   })
 
+  describe('checkAnswerAndDisplay', function(){
+    let clue = {answer: 'George Washington'}
+    let answerContainer = document.querySelector('.answer-container')
+
+    it('displays Thats right if the user types in the correct answer', function(){
+      let answer = 'George Washington'
+      checkAnswerAndDisplay(clue, answer)
+      expect(answerContainer.innerText).to.eq("That's right")
+    })
+
+    it('displays Sorry, we were looking for {answer}, after the wrong answer', function(){
+      let answer = 'Tom Jefferson'
+      checkAnswerAndDisplay(clue, answer)
+      expect(answerContainer.innerText).to.eq("Sorry, we were looking for: George Washington")
+    })
+
+    it('calls resetAfterTwoSeconds', function(){
+      let resetSpy = sinon.stub(window, 'resetAfterTwoSeconds')
+      let answer = 'Tom Jefferson'
+      checkAnswerAndDisplay(clue, answer)
+      expect(resetSpy.calledOnce).to.eq(true)
+      resetAfterTwoSeconds.restore()
+    })
+  })
+
+  describe('resetAfterTwoSeconds', function(){
+    it('returns a promise', function(){
+      expect(resetAfterTwoSeconds()).to.be.a('promise')
+    })
+
+    it('waits two seconds and then calls setupPage', function(){
+      let setupPageSpy = sinon.spy(window, 'setupPage')
+      resetAfterTwoSeconds().then(
+        function(){
+          expect(setupPageSpy.calledOnce).to.eq(true)
+        }
+
+      )
+      setupPage.restore()
+    })
+  })
+
   describe('checkAndUpdateOnSubmit', function(){
     it('checks and updates', function(){
       checkAndUpdateOnSubmit()
+    })
+  })
+
+  describe('checkAndUpdateOnSubmit', function(){
+    let form = document.querySelector('form')
+    let submit = form.querySelector('input[type="submit"]')
+    let formTextInput = form.querySelector('input[type="text"]')
+    currentClue = {answer: 'some good answer'}
+    let clickEvent = new MouseEvent('click', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    beforeEach(function(){
+      formTextInput.value = 'what'
+    })
+
+    it('calls checkAnswerAndDisplay when a form is submitted', function(){
+
+      let checkAnswerAndDisplaySpy = sinon.spy(window, 'checkAnswerAndDisplay')
+      checkAndUpdateOnSubmit()
+      submit.dispatchEvent(clickEvent)
+      setTimeout(function(){
+        expect(checkAnswerAndDisplaySpy.calledOnce).to.eq(true)
+      }, 200)
+      checkAnswerAndDisplay.restore()
+    })
+  })
+
+  describe('removeAnswerDisplayAndInput', function(){
+    let answerContainer = document.querySelector('.answer-container')
+    let clueContainer = document.querySelector('.clue-container')
+
+    it('clears the text of the answer-container', function(){
+      answerContainer.innerText = 'a good answer'
+      removeAnswerDisplayAndInput()
+      expect(answerContainer.innerText).to.eq('')
+    })
+
+    it('hides the answer-container', function(){
+      answerContainer.classList.remove('hide')
+      removeAnswerDisplayAndInput()
+      expect(Array.from(answerContainer.classList)).to.include('hide')
+    })
+
+    it('sets the forms input to be blank', function(){
+      let textInput = clueContainer.querySelector('input[type="text"]')
+      textInput.value = 'answer attempt'
+      removeAnswerDisplayAndInput()
+      expect(textInput.value).to.eq('')
+    })
+  })
+
+  describe('hideClueContainer', function(){
+    let clueContainer = document.querySelector('.clue-container')
+
+    it('hides the clue container', function(){
+      clueContainer.classList.remove('hide')
+      hideClueContainer()
+      expect(Array.from(clueContainer.classList)).to.include('hide')
     })
   })
 })

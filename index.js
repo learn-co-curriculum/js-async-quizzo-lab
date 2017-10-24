@@ -15,7 +15,7 @@ function setCategories(){
 }
 
 function requestAndDisplayCategories(){
-
+  let categoryContainer = document.querySelector('.category-container')
   return setCategories().then((categories) => {
     displayCategoriesContainer()
     categoryContainer.innerHTML = makeCategories(categories);
@@ -75,39 +75,52 @@ function requestClue(categoryId, value){
   )
 }
 
-function onClickAskQuestion(){
-  let questionBtns = document.querySelector('.question-container').querySelectorAll('.btn')
-  questionBtns.forEach((btn) => {
-    btn.addEventListener('click', function(event){
-      let value = event.target.innerText
-      let categoryId = btn.dataset.categoryId
-      requestClue(categoryId, value).then((response) => {
-        currentClue = response[0]
-
-        displayClue(response[0])
-      })
-    })
-  })
-}
-
 function displayClue(clue){
 
   let questionContainer = document.querySelector('.question-container').classList.add('hide')
   let categoryContainer = document.querySelector('.category-container').classList.add('hide')
-  let clueTextContainer = document.querySelector('.clue-text')
+
   let answerContainer = document.querySelector('.answer-container')
+  let clueTextContainer = document.querySelector('.clue-text')
   clueTextContainer.classList.remove('hide')
   document.querySelector('.clue-container').classList.remove('hide')
   document.querySelector('.answer-container').classList.remove('hide')
   answerContainer.append(clue.question)
 }
 
+function onClickAskQuestion(){
+  let questionBtns = document.querySelector('.question-container').querySelectorAll('.btn')
+
+  questionBtns.forEach((btn) => {
+    btn.addEventListener('click', function(event){
+      let value = event.target.innerText
+      let categoryId = btn.dataset.categoryId
+
+      requestClue(categoryId, value).then((response) => {
+        currentClue = response[0]
+        displayClue(response[0])
+      })
+    })
+  })
+}
+
+
+
 function checkAnswer(clue, answer){
   return clue.answer === answer
 }
 
+function resetAfterTwoSeconds(){
+  return new Promise(function(resolve){
+    setTimeout(function(){
+      resolve()
+    }, 2000)
+  }).then(function(){
+    setupPage()
+  })
+}
+
 function checkAnswerAndDisplay(clue, answer){
-  // let clueText = document.querySelector('.clue-text').classList.add('hide')
   let answerContainer = document.querySelector('.answer-container')
   answerContainer.innerText = ''
   if(checkAnswer(clue, answer)){
@@ -127,14 +140,18 @@ function checkAndUpdateOnSubmit(){
   })
 }
 
-function resetAfterTwoSeconds(){
-  return new Promise(function(resolve){
-    setTimeout(function(){
-      resolve()
-    }, 2000)
-  }).then(function(){
-    setupPage()
-  })
+
+function removeAnswerDisplayAndInput(){
+
+  let answerContainer = document.querySelector('.answer-container')
+  answerContainer.innerText = ''
+  answerContainer.classList.add('hide')
+  document.querySelector('input[type="text"]').value = ''
+}
+
+function hideClueContainer(){
+  let clueContainer = document.querySelector('.clue-container')
+  clueContainer.classList.add('hide')
 }
 
 function setupPage(){
@@ -148,23 +165,3 @@ function setupPage(){
     checkAndUpdateOnSubmit()
   })
 }
-
-function removeAnswerDisplayAndInput(){
-  let answerContainer;
-  answerContainer = document.querySelector('.answer-container')
-  answerContainer.innerText = ''
-  answerContainer.classList.add('hide')
-  document.querySelector('input[type="text"]').value = ''
-}
-
-function hideClueContainer(){
-  let clueContainer = document.querySelector('.clue-container')
-  clueContainer.classList.add('hide')
-}
-// need to talk about data attributes
-// thennable functions
-// talk about dataset
-// could introduce the idea about a store
-
-// displayCategories
-// displayQuestionNumbers
